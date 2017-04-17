@@ -2,7 +2,7 @@
 import sys
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense, Activation, LSTM, Merge, TimeDistributed, Bidirectional
+from keras.layers import Dense, Activation, LSTM, Bidirectional, Embedding, TimeDistributed
 from keras.optimizers import SGD
 from keras.callbacks import ModelCheckpoint
 
@@ -27,26 +27,37 @@ def read_data(filename):
 
     return data, word2id, id2word
 
-def train_model(datasets, validation_split=0.1):
-    model = Sequential()
-    model.add(Bidirectional(LSTM(10, return_sequences=True), input_shape=(5, 10)))
-    model.add(Bidirectional(LSTM(10)))
-    model.add(Dense(5))
-    model.add(Activation('softmax'))
+def train_model(datasets, buckets, from_size=1000, to_size=100):
+    embedding_size = 64
+    models = []
 
-    sgd = SGD(lr=0.1, decay=1e-5, momentum=0.9, nesterov=True)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd)
+    for bucket_id, dataset in enumerate(datasets):
+        model = Sequential()
 
-    model.summary()
+        input_length = buckets[bucket_id]
+        model.add(Embedding(from_size, embedding_size, input_length=input_length))
+        model.add(Bidirectional(LSTM(embedding_size, return_sequences=True)))
+        model.add(Bidirectional(LSTM(embedding_size)))
+        model.add(Dense(to_size))
+        model.add(Activation('softmax'))
 
-    print("Train...")
-    # model.fit([X_train, X_train],
-    #         Y_train,
-    #         batch_size=32,
-    #         nb_epoch=5,
-    #         validation_data=([X_test, X_test], Y_test),
-    #         verbose=1,
-    #         show_accuracy=True)
+        sgd = SGD(lr=0.1, decay=1e-5, momentum=0.9, nesterov=True)
+        model.compile(loss='sparse_categorical_crossentropy', optimizer=sgd)
+
+        print('model %d with input_length=%3d built' % (bucket_id, buckets[bucket_id]))
+        models.append(model)
+
+    for bucket_id, dataset in enumerate(datasets):
+        X_train, Y_train = zip(*dataset)
+        X_train = list(X_train)
+        Y_train = list(Y_train)
+        models[bucket_id].fit(
+                X_train,
+                Y_train,
+                batch_size=32,
+                nb_epoch=5,
+                # validation_data=([X_test, X_test], Y_test),
+                verbose=1)
 
 def main():
     buckets = [3, 6, 10, 20]
@@ -71,13 +82,14 @@ def main():
             to_ids += [x_dict['_PAD']] * (bucket_size - len(to_ids))
 
             # transform to one-hot
-            from_onehot = np.zeros(shape=(bucket_size, from_size))
-            to_onehot = np.zeros(shape=(bucket_size, to_size))
-            from_onehot[np.arange(bucket_size), from_ids] = 1
-            to_onehot[np.arange(bucket_size), to_ids] = 1
-            datasets[bucket_id][data_id] = (from_onehot, to_onehot)
+            # if embedding is used, we don't need to turn X_train to one-hot array
+            # from_onehot = np.zeros(shape=(bucket_size, from_size))
+            # from_onehot[np.arange(bucket_size), from_ids] = 1
+            # to_onehot = np.zeros(shape=(bucket_size, to_size))
+            # to_onehot[np.arange(bucket_size), to_ids] = 1
+            # datasets[bucket_id][data_id] = (from_ids, to_onehot)
 
-    train_model(x_train)
+    train_model(datasets, buckets, from_size=from_size, to_size=to_size)
 
 if __name__ == '__main__':
     main()
