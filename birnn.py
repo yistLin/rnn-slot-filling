@@ -1,9 +1,9 @@
 #!/usr/local/bin/python3
 import sys
 import numpy as np
+from json import dumps
 from keras.models import Sequential
 from keras.layers import Dense, Activation, LSTM, Bidirectional, Embedding, TimeDistributed
-from keras.optimizers import SGD
 from keras.callbacks import ModelCheckpoint
 
 def read_data(filename):
@@ -28,43 +28,57 @@ def read_data(filename):
     return data, word2id, id2word
 
 def train_model(datasets, buckets, from_size=1000, to_size=100):
-    embedding_size = 64
+    embedding_size = 128
     models = []
 
     for bucket_id, dataset in enumerate(datasets):
+        # stack model
         model = Sequential()
+        model.add(Embedding(from_size, embedding_size, input_length=buckets[bucket_id]))
+        model.add(Bidirectional(LSTM(128, return_sequences=True)))
+        model.add(LSTM(to_size, return_sequences=True))
+        model.add(TimeDistributed(Dense(to_size, activation='softmax')))
 
-        input_length = buckets[bucket_id]
-        model.add(Embedding(from_size, embedding_size, input_length=input_length))
-        model.add(Bidirectional(LSTM(embedding_size, return_sequences=True)))
-        # model.add(Bidirectional(LSTM(embedding_size)))
-        model.add(LSTM(embedding_size))
-        model.add(Dense(64))
-        model.add(Dense(input_length))
-        model.add(Activation('relu'))
+        # compile model
+        model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
+        model.summary()
 
-        # sgd = SGD(lr=0.1, decay=1e-5, momentum=0.9, nesterov=True)
-        model.compile(loss='categorical_crossentropy', optimizer='adam')
-
-        print('model %d with input_length=%3d built' % (bucket_id, buckets[bucket_id]))
+        # collect all models
         models.append(model)
+        print('model %d with input_length =%3d built' % (bucket_id, buckets[bucket_id]))
 
     for bucket_id, dataset in enumerate(datasets):
         X_train, Y_train = zip(*dataset)
         X_train = list(X_train)
-        Y_train = list(Y_train)
+        Y_train = np.array(list(Y_train))
+        checkpoint = ModelCheckpoint(
+            "model-{epoch:4d}-{val_acc:.2f}.hdf5",
+            monitor='val_loss',
+            verbose=0,
+            save_best_only=False,
+            save_weights_only=False,
+            mode='auto',
+            period=100)
         models[bucket_id].fit(
-                X_train,
-                Y_train,
-                batch_size=32,
-                nb_epoch=5,
-                # validation_data=([X_test, X_test], Y_test),
-                verbose=1)
+            X_train,
+            Y_train,
+            batch_size=32,
+            epochs=1000,
+            # validation_split=0.1,
+            verbose=1,
+            callbacks=[checkpoint])
+        models[bucket_id].save('model-%d.hdf5' % (bucket_id))
 
 def main():
-    buckets = [3, 6, 10, 20]
+    buckets = [4, 7, 10, 20]
     x_data, x_word2id, _ = read_data(sys.argv[1])
-    y_data, y_word2id, y_dict = read_data(sys.argv[2])
+    y_data, y_word2id, y_id2word = read_data(sys.argv[2])
+
+    # dump dictionary
+    with open('from.word2id.txt', 'w') as x_dict_file:
+        x_dict_file.write(dumps(x_word2id))
+    with open('to.id2word.txt', 'w') as y_dict_file:
+        y_dict_file.write(dumps(y_id2word))
 
     datasets = [[] for i in range(len(buckets))]
     for source_ids, target_ids in zip(x_data, y_data):
@@ -84,12 +98,11 @@ def main():
             to_ids += [y_word2id['_PAD']] * (bucket_size - len(to_ids))
 
             # transform to one-hot
-            # if embedding is used, we don't need to turn X_train to one-hot array
             # from_onehot = np.zeros(shape=(bucket_size, from_size))
             # from_onehot[np.arange(bucket_size), from_ids] = 1
-            # to_onehot = np.zeros(shape=(bucket_size, to_size))
-            # to_onehot[np.arange(bucket_size), to_ids] = 1
-            # datasets[bucket_id][data_id] = (from_ids, to_onehot)
+            to_onehot = np.zeros(shape=(bucket_size, to_size))
+            to_onehot[np.arange(bucket_size), to_ids] = 1
+            datasets[bucket_id][data_id] = (from_ids, to_onehot)
 
     train_model(datasets, buckets, from_size=from_size, to_size=to_size)
 
