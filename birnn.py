@@ -53,7 +53,7 @@ def train_model(datasets, buckets, from_size=1000, to_size=100):
         Y_train = np.array(list(Y_train))
         checkpoint = ModelCheckpoint(
             "model-{epoch:4d}-{val_acc:.2f}.hdf5",
-            monitor='val_loss',
+            monitor='val_acc',
             verbose=0,
             save_best_only=False,
             save_weights_only=False,
@@ -64,7 +64,7 @@ def train_model(datasets, buckets, from_size=1000, to_size=100):
             Y_train,
             batch_size=32,
             epochs=100,
-            # validation_split=0.1,
+            validation_split=0.1,
             verbose=1,
             callbacks=[checkpoint])
         models[bucket_id].save('model-%d.hdf5' % (bucket_id))
