@@ -52,13 +52,13 @@ def train_model(datasets, buckets, from_size=1000, to_size=100):
         X_train = list(X_train)
         Y_train = np.array(list(Y_train))
         checkpoint = ModelCheckpoint(
-            "model-{epoch:04d}-{val_acc:.2f}.hdf5",
+            'model-%d-{epoch:03d}-{val_acc:.2f}.hdf5' % bucket_id,
             monitor='val_acc',
-            verbose=0,
+            verbose=1,
             save_best_only=False,
             save_weights_only=False,
             mode='auto',
-            period=20)
+            period=5)
         models[bucket_id].fit(
             X_train,
             Y_train,
