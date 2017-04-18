@@ -58,12 +58,12 @@ def train_model(datasets, buckets, from_size=1000, to_size=100):
             save_best_only=False,
             save_weights_only=False,
             mode='auto',
-            period=100)
+            period=20)
         models[bucket_id].fit(
             X_train,
             Y_train,
             batch_size=32,
-            epochs=1000,
+            epochs=100,
             # validation_split=0.1,
             verbose=1,
             callbacks=[checkpoint])
