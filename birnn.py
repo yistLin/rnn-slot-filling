@@ -52,7 +52,7 @@ def train_model(datasets, buckets, from_size=1000, to_size=100):
         X_train = list(X_train)
         Y_train = np.array(list(Y_train))
         checkpoint = ModelCheckpoint(
-            "model-{epoch:4d}-{val_acc:.2f}.hdf5",
+            "model-{epoch:04d}-{val_acc:.2f}.hdf5",
             monitor='val_acc',
             verbose=0,
             save_best_only=False,
