@@ -1,21 +1,22 @@
 #!/usr/local/bin/python3
 import sys
+import os
 import numpy as np
 from json import loads
 from keras.models import load_model
 
-def main():
+def main(pathname):
     buckets = [4, 7, 10, 20]
     models = []
     for i in range(len(buckets)):
-        models.append(load_model('model-%d.hdf5' % i))
+        models.append(load_model(os.path.join(pathname, 'model-%d.hdf5' % i)))
         models[i].summary()
         print('model-%d.hdf5 loaded' % i)
 
     # load dictionary
-    with open('from.word2id.txt', 'r') as x_dict_file:
+    with open(os.path.join(pathname, 'from.word2id.txt'), 'r') as x_dict_file:
         word2id = loads(x_dict_file.read())
-    with open('to.id2word.txt', 'r') as y_dict_file:
+    with open(os.path.join(pathname, 'to.id2word.txt'), 'r') as y_dict_file:
         id2word = loads(y_dict_file.read())
 
     try:
@@ -45,4 +46,7 @@ def main():
         return
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1:
+        main(sys.argv[1])
+    else:
+        main('./')
