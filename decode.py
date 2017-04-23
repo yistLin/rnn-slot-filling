@@ -4,9 +4,13 @@ import os
 import argparse
 import numpy as np
 from json import loads
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
 from keras.models import load_model
 
-def main(pathname='./', testfilename=None):
+def main(pathname='./', testfilename=None, outputfilename=None):
     buckets = [4, 7, 10, 20]
     models = []
     for i in range(len(buckets)):
@@ -32,9 +36,9 @@ def main(pathname='./', testfilename=None):
         for line in lines:
             for bucket_id, bucket_size in enumerate(buckets):
                 if len(line) < bucket_size:
-                    line += [word2id['_PAD']] * (bucket_size - len(line))
-                    line = np.array(line).reshape(1, bucket_size)
-                    prediction = models[bucket_id].predict_classes(line, batch_size=1, verbose=0)
+                    source = line + [word2id['_PAD']] * (bucket_size - len(line))
+                    source = np.array(source).reshape(1, bucket_size)
+                    prediction = models[bucket_id].predict_classes(source, batch_size=1, verbose=0)
                     break
             else:
                 continue
@@ -42,7 +46,7 @@ def main(pathname='./', testfilename=None):
             answer = [id2word[x] for x in prediction[0]]
             answers.append(' '.join(answer[:len(line)]))
 
-        with open('pred-' + testfilename, 'w') as outputfile:
+        with open(outputfilename, 'w') as outputfile:
             answers.append('')
             outputfile.write('\n'.join(answers))
 
@@ -77,11 +81,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Decoding strings by bucketing models')
     parser.add_argument('model_dir', help='specify where stores the models')
     parser.add_argument('--file', help='decode strings from a specific file')
+    parser.add_argument('--output', help='output decoded sentences')
     args = parser.parse_args()
 
     print('Model directory is:', args.model_dir)
 
     if args.file:
-        main(pathname=args.model_dir, testfilename=args.file)
+        main(pathname=args.model_dir, testfilename=args.file, outputfilename=args.output)
     else:
         main(pathname=args.model_dir)
