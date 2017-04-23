@@ -3,6 +3,7 @@ import sys
 import os
 import argparse
 import numpy as np
+from collections import defaultdict
 from json import loads
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -21,6 +22,7 @@ def main(pathname='./', testfilename=None, outputfilename=None):
     # load dictionary
     with open(os.path.join(pathname, 'from.word2id.txt'), 'r') as x_dict_file:
         word2id = loads(x_dict_file.read())
+        word2id = defaultdict(lambda: 0, word2id)
     with open(os.path.join(pathname, 'to.id2word.txt'), 'r') as y_dict_file:
         id2word = loads(y_dict_file.read())
 
