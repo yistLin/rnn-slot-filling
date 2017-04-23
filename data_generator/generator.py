@@ -86,6 +86,18 @@ if __name__ == '__main__':
     x_data += x
     y_data += y
 
+    # how about _FOOD _FOOD
+    x_list, y_list = country_food()
+    for x, y in zip(x_list, y_list):
+        x_data.append('how about ' + x)
+        y_data.append('_ _ ' + y)
+
+    # _TYPE in the _AREA part of town
+    for restaurant in restaurants:
+        for area in areas:
+            x_data.append(restaurant + ' in the ' + area + ' part of town')
+            y_data.append('_TYPE _ _ _AREA _ _ _')
+
     # i want to find/im looking for a/an _PRICERANGE/_TYPE _TYPE
     for search in searchs:
         x_list_p, y_list_p = a_pricerange_type()
@@ -133,3 +145,9 @@ if __name__ == '__main__':
         assert len(x.split()) == len(y.split())
 
     print(counts)
+
+    with open('X_g_data', 'w+') as f:
+        f.write('\n'.join(x_data) + '\n')
+    with open('Y_g_data', 'w+') as f:
+        f.write('\n'.join(y_data) + '\n')
+
