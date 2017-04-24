@@ -959,7 +959,7 @@ _ _ _ _ _PRICERANGE _TYPE _ _ _AREA _ _ _
 _ _
 _
 _ _
-_ _ _ _ _ _ _ _ _ _ _ _ _
+_ _ _ _ _ _ _ _ _ _
 _ _ _ _
 _ _ _ _
 _
@@ -4591,7 +4591,7 @@ _
 _ _ _ _
 _
 _PRICERANGE
-_PRICERANGE _
+_PRICERANGE
 _AREA
 _ _
 _ _
@@ -4669,7 +4669,7 @@ _ _ _ _
 _ _ _ _ _ _ _ _
 _ _ _ _ _
 _ _ _ _ _PRICERANGE _ _TYPE _ _FOOD _
-_ _ _ _PRICERANGE _ _TYPE _ _ _
+_ _ _ _PRICERANGE _ _TYPE _ _
 _ _ _ _PRICERANGE _ _TYPE _ _ _FOOD
 _ _ _ _ _ _ _
 _ _ _
@@ -11222,7 +11222,7 @@ _ _ _ _ _ _ _
 _ _ _ _
 _ _ _PRICERANGE _TYPE _ _ _AREA _ _ _
 _
-_ _ _
+_ _
 _ _ _
 _ _ _
 _ _ _ _ _ _PRICERANGE _TYPE _ _ _AREA
@@ -12708,7 +12708,7 @@ _ _ _FOOD _
 _ _ _ _
 _ _
 _ _ _ _
-_TYPE _ _ _AREA _ _ _ _
+_TYPE _ _ _AREA _ _ _
 _FOOD
 _FOOD
 _ _ _FOOD _
