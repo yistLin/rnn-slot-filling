@@ -20,11 +20,11 @@ if __name__ == '__main__':
     assert len(x_data) == len(y_data)
     print('origin data lines:', len(x_data))
 
-    x_test = x_data[:2000]
-    x_train = x_data[2000:]
+    x_test = x_data[:10000]
+    x_train = x_data[10000:]
 
-    y_test = y_data[:2000]
-    y_train = y_data[2000:]
+    y_test = y_data[:10000]
+    y_train = y_data[10000:]
 
     assert len(x_train) == len(y_train)
     print('train data lines:', len(x_train))
