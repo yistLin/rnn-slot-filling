@@ -8,9 +8,9 @@ from keras.callbacks import ModelCheckpoint
 
 def read_data(filename):
     data = []
-    word2id = {'_PAD': 0}
-    id2word = ['_PAD']
-    cnt = 1
+    word2id = {'_PAD': 0, '_UNK': '1'}
+    id2word = ['_PAD', '_UNK']
+    cnt = 2
     with open(filename, 'r') as f:
         for line in f:
             words = line[:-1].split()
