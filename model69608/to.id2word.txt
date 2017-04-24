@@ -1,0 +1,1 @@
+["_PAD", "_UNK", "_", "_TYPE", "_FOOD", "_AREA", "_PRICERANGE", "_NAME"]
